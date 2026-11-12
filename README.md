@@ -2,7 +2,7 @@
 # Welcome to SOfish Diversity! 🎣
 
 This application allows you to explore the diversity of fish species in the Southern Ocean.
-The app still has some minor bugs, but can already be consulted here: https://qr2hj9-pablo-deschepper.shinyapps.io/SOFishTraitmapper/
+The app can be consulted here: https://sofish.naturalsciences.be
 
 ***
 
