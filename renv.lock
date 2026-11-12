@@ -4,7 +4,11 @@
     "Repositories": [
       {
         "Name": "CRAN",
+<<<<<<< HEAD
         "URL": "https://cran.rstudio.com"
+=======
+        "URL": "https://packagemanager.posit.co/cran/__linux__/jammy/latest"
+>>>>>>> personal/main
       }
     ]
   },
@@ -372,15 +376,30 @@
     },
     "bit": {
       "Package": "bit",
+<<<<<<< HEAD
       "Version": "4.6.0",
       "Source": "Repository",
       "Title": "Classes and Methods for Fast Memory-Efficient Boolean Selections",
       "Authors@R": "c( person(\"Michael\", \"Chirico\", email = \"MichaelChirico4@gmail.com\", role = c(\"aut\", \"cre\")), person(\"Jens\", \"Oehlschlägel\", role = \"aut\"), person(\"Brian\", \"Ripley\", role = \"ctb\") )",
+=======
+      "Version": "4.5.0",
+      "Source": "Repository",
+      "Type": "Package",
+      "Title": "Classes and Methods for Fast Memory-Efficient Boolean Selections",
+      "Date": "2024-09-17",
+      "Authors@R": "c(person(given = \"Jens\", family = \"Oehlschlägel\", role = c(\"aut\", \"cre\"), email = \"Jens.Oehlschlaegel@truecluster.com\"), person(given = \"Brian\", family = \"Ripley\", role = \"ctb\"))",
+      "Author": "Jens Oehlschlägel [aut, cre], Brian Ripley [ctb]",
+      "Maintainer": "Jens Oehlschlägel <Jens.Oehlschlaegel@truecluster.com>",
+>>>>>>> personal/main
       "Depends": [
         "R (>= 3.4.0)"
       ],
       "Suggests": [
+<<<<<<< HEAD
         "testthat (>= 3.0.0)",
+=======
+        "testthat (>= 0.11.0)",
+>>>>>>> personal/main
         "roxygen2",
         "knitr",
         "markdown",
@@ -394,6 +413,7 @@
       "LazyLoad": "yes",
       "ByteCompile": "yes",
       "Encoding": "UTF-8",
+<<<<<<< HEAD
       "URL": "https://github.com/r-lib/bit",
       "VignetteBuilder": "knitr, rmarkdown",
       "RoxygenNote": "7.3.2",
@@ -402,6 +422,13 @@
       "Author": "Michael Chirico [aut, cre], Jens Oehlschlägel [aut], Brian Ripley [ctb]",
       "Maintainer": "Michael Chirico <MichaelChirico4@gmail.com>",
       "Repository": "CRAN"
+=======
+      "URL": "https://github.com/truecluster/bit",
+      "VignetteBuilder": "knitr, rmarkdown",
+      "RoxygenNote": "7.3.2",
+      "NeedsCompilation": "yes",
+      "Repository": "RSPM"
+>>>>>>> personal/main
     },
     "bit64": {
       "Package": "bit64",
@@ -2941,6 +2968,7 @@
       "Maintainer": "Robert J. Hijmans <r.hijmans@gmail.com>",
       "Repository": "CRAN"
     },
+<<<<<<< HEAD
     "remotes": {
       "Package": "remotes",
       "Version": "2.5.0",
@@ -2986,6 +3014,60 @@
       "NeedsCompilation": "no",
       "Author": "Gábor Csárdi [aut, cre], Jim Hester [aut], Hadley Wickham [aut], Winston Chang [aut], Martin Morgan [aut], Dan Tenenbaum [aut], Posit Software, PBC [cph, fnd], Ascent Digital Services [cph]",
       "Maintainer": "Gábor Csárdi <csardi.gabor@gmail.com>",
+=======
+    "renv": {
+      "Package": "renv",
+      "Version": "1.1.5",
+      "Source": "Repository",
+      "Type": "Package",
+      "Title": "Project Environments",
+      "Authors@R": "c( person(\"Kevin\", \"Ushey\", role = c(\"aut\", \"cre\"), email = \"kevin@rstudio.com\", comment = c(ORCID = \"0000-0003-2880-7407\")), person(\"Hadley\", \"Wickham\", role = c(\"aut\"), email = \"hadley@rstudio.com\", comment = c(ORCID = \"0000-0003-4757-117X\")), person(\"Posit Software, PBC\", role = c(\"cph\", \"fnd\")) )",
+      "Description": "A dependency management toolkit for R. Using 'renv', you can create and manage project-local R libraries, save the state of these libraries to a 'lockfile', and later restore your library as required. Together, these tools can help make your projects more isolated, portable, and reproducible.",
+      "License": "MIT + file LICENSE",
+      "URL": "https://rstudio.github.io/renv/, https://github.com/rstudio/renv",
+      "BugReports": "https://github.com/rstudio/renv/issues",
+      "Imports": [
+        "utils"
+      ],
+      "Suggests": [
+        "BiocManager",
+        "cli",
+        "compiler",
+        "covr",
+        "cpp11",
+        "devtools",
+        "generics",
+        "gitcreds",
+        "jsonlite",
+        "jsonvalidate",
+        "knitr",
+        "miniUI",
+        "modules",
+        "packrat",
+        "pak",
+        "R6",
+        "remotes",
+        "reticulate",
+        "rmarkdown",
+        "rstudioapi",
+        "shiny",
+        "testthat",
+        "uuid",
+        "waldo",
+        "yaml",
+        "webfakes"
+      ],
+      "Encoding": "UTF-8",
+      "RoxygenNote": "7.3.2",
+      "VignetteBuilder": "knitr",
+      "Config/Needs/website": "tidyverse/tidytemplate",
+      "Config/testthat/edition": "3",
+      "Config/testthat/parallel": "true",
+      "Config/testthat/start-first": "bioconductor,python,install,restore,snapshot,retrieve,remotes",
+      "NeedsCompilation": "no",
+      "Author": "Kevin Ushey [aut, cre] (ORCID: <https://orcid.org/0000-0003-2880-7407>), Hadley Wickham [aut] (ORCID: <https://orcid.org/0000-0003-4757-117X>), Posit Software, PBC [cph, fnd]",
+      "Maintainer": "Kevin Ushey <kevin@rstudio.com>",
+>>>>>>> personal/main
       "Repository": "CRAN"
     },
     "rlang": {

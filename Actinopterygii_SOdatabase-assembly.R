@@ -16,6 +16,10 @@ library(dplyr)        # Data manipulation (filter, select, mutate, etc.)
 library(tidyr)        # Data tidying (pivot_wider, separate, etc.)
 library(sf)           # Spatial data handling (st_as_sfc, st_sf, etc.)
 library(httr2)        # HTTP requests (for GBIF API)
+<<<<<<< HEAD
+=======
+library(httr)         # HTTP request (for RAMS)
+>>>>>>> personal/main
 library(worrms)       # WoRMS taxonomy (wm_name2id, wm_external)
 library(CoordinateCleaner) # Clean geographic coordinates (clean_coordinates, cc_sea)
 library(taxize)       # Taxonomic resolution (classification)
@@ -26,9 +30,16 @@ library(dbplyr)       # Database dplyr backend (dbGetQuery)
 library(rredlist)     # IUCN Red List data (rl_species)
 library(stringr)      # String manipulation (str_split, gsub)
 library(data.table)   # Fast data reading/writing (fread)
+<<<<<<< HEAD
 
 # Set working directory
 setwd("C:/Users/pdeschepper/Desktop/WORK/ADVANCE/VRI/Rcode/TraitMapper/")
+=======
+library(caret)        # To create data folds
+
+# Set working directory
+setwd("C:/Users/pdeschepper/OneDrive - Institute of Natural Sciences/Desktop/WORK/ADVANCE/VRI/Rcode/SOfish_diversity/Cleaned/")
+>>>>>>> personal/main
 
 # ==============================================================================
 # 2. QUERY PARAMETERS
@@ -53,6 +64,7 @@ selected_taxa <- c(
 # ==============================================================================
 # 3. GET DIFFERENT IDs FOR LOOKUP
 # ==============================================================================
+<<<<<<< HEAD
 # Get the AphiaID for the main taxon
 AphiaID <- worrms::wm_name2id(name = scientific.name)
 
@@ -83,10 +95,34 @@ get_gbif_backbone_id <- function(scientific_name) {
     return(response$results[[1]]$nubKey)
   } else {
     message("  Warning: No GBIF backbone ID found for ", scientific_name)
+=======
+# Batch-fetch AphiaIDs for all selected taxa
+aphia_ids <- worrms::wm_name2id_(name = selected_taxa)
+
+# Named integer vector, dropping NAs
+aphiaid_vector <- na.omit(unlist(aphia_ids))
+
+# Map AphiaIDs to GBIF backbone keys via LSID lookup
+get_gbif_key <- function(aphia_id, taxon_name) {
+  sourceId <- paste0("urn:lsid:marinespecies.org:taxname:", aphia_id)
+  response <- httr2::request("https://api.gbif.org/v1/species") %>%
+    httr2::req_url_query(
+      datasetKey = "2d59e5db-57ad-41ff-97d6-11f5fb264527",
+      sourceId   = sourceId
+    ) %>%
+    httr2::req_perform() %>%
+    httr2::resp_body_json()
+  
+  if (length(response$results) > 0) {
+    return(response$results[[1]]$nubKey)
+  } else {
+    message("No GBIF backbone match for: ", taxon_name)
+>>>>>>> personal/main
     return(NA_integer_)
   }
 }
 
+<<<<<<< HEAD
 # Fetch GBIF backbone IDs for all selected taxa
 GBIF_backboneIDs_list <- purrr::map(selected_taxa, function(fam) {
   id <- get_gbif_backbone_id(fam)
@@ -97,6 +133,17 @@ GBIF_backboneIDs_vector <- GBIF_backboneIDs_list %>%
   unlist() %>%
   na.omit() %>%
   as.integer()
+=======
+# Apply over the named AphiaID vector
+gbif_keys <- purrr::imap_int(aphiaid_vector, get_gbif_key)
+
+# Overview of unmatched taxa
+no_match <- names(gbif_keys[is.na(gbif_keys)])
+if (length(no_match) > 0) message("Unmatched taxa: ", paste(no_match, collapse = ", "))
+
+# Drop NAs for use in download
+GBIF_backboneIDs_vector <- na.omit(gbif_keys)
+>>>>>>> personal/main
 
 # ==============================================================================
 # 4. POLYGONS FOR MEASO REGIONS AND SOUTHERN OCEAN
@@ -112,10 +159,20 @@ SO_sf <- st_sf(geometry = SO_polygon_sfc, name = "Southern Ocean Boundary")
 # ==============================================================================
 # 5. GET OCCURRENCE RECORDS FOR SPECIFIED TAXON
 # ==============================================================================
+<<<<<<< HEAD
 # Query OBIS for occurrence records
 obis_results <- robis::occurrence(taxonid = AphiaID, geometry = SO_polygon)
 write.table(obis_results, file = "Actinopterygii_obis.csv", sep = ";", col.names = TRUE, quote = FALSE)
 
+=======
+# OBIS
+# Query OBIS for occurrence records
+obis_results <- robis::occurrence(taxonid = aphiaid_vector, geometry = SO_polygon)
+# Optional: save OBIS results
+# write.table(obis_results, file = "Actinopterygii_obis.csv", sep = ";", col.names = TRUE, quote = FALSE)
+
+# GBIF
+>>>>>>> personal/main
 # Query GBIF for occurrence records
 gbif_results <- rgbif::occ_download(
   pred("hasGeospatialIssue", FALSE),
@@ -126,15 +183,25 @@ gbif_results <- rgbif::occ_download(
   format = "SIMPLE_CSV"
 )
 
+<<<<<<< HEAD
 # Check download status and retrieve data
 occ_download_wait(gbif_results)
 d <- occ_download_get(gbif_results) %>%
   occ_download_import()
 gbif_citation(gbif_results)
+=======
+# Check download status
+occ_download_wait(gbif_results)  
+d  <- occ_download_get(gbif_results, overwrite = TRUE)
+df <- occ_download_import(d)
+
+gbif_citation(d)
+>>>>>>> personal/main
 
 # ==============================================================================
 # 6. MERGE OBIS AND GBIF DATA
 # ==============================================================================
+<<<<<<< HEAD
 # Load GBIF data from CSV
 gbif_data_csv <- "C:/Users/pdeschepper/Desktop/WORK/ADVANCE/VRI/Rcode/TraitMapper/Actinopterygii_gbif/0011306-250711103210423.csv"
 gbif_data <- data.table::fread(gbif_data_csv, sep = ";", fill = TRUE, header = TRUE)
@@ -153,11 +220,34 @@ obis_data <- subset(obis_data, select = -1)
 # Define columns to keep from both datasets
 obis_cols_to_keep <- c("scientificName", "decimalLatitude", "decimalLongitude", "basisOfRecord", "year", "issues")
 gbif_cols_to_keep <- c("species", "decimalLatitude", "decimalLongitude", "basisOfRecord", "year", "issues")
+=======
+# Load GBIF data from CSV if needed
+# gbif_data_csv <- "C:/Users/pdeschepper/OneDrive - Institute of Natural Sciences/Desktop/WORK/ADVANCE/VRI/Rcode/SOfish_diversity/Cleaned/" # link your datapath here
+# gbif_data <- data.table::fread(gbif_data_csv, sep = ";", fill = TRUE, header = TRUE)
+gbif_data <- df
+gbif_data[, sapply(gbif_data, is.character)] <- lapply(gbif_data[, sapply(gbif_data, is.character)], as.factor)
+
+# Load OBIS data from CSV if needed
+# obis_data_csv <- "C:/Users/pdeschepper/Desktop/WORK/ADVANCE/VRI/Rcode/TraitMapper/Actinopterygii_obis.csv"
+# obis_data <- data.table::fread(obis_data_csv, sep = ";", fill = TRUE, header = TRUE, stringsAsFactors = FALSE)
+obis_data <- obis_results
+
+# Define columns to keep from both datasets
+obis_cols_to_keep <- c("scientificName", "decimalLatitude", "decimalLongitude", "basisOfRecord", "year", "dataset_id", "issues")
+gbif_cols_to_keep <- c("species", "decimalLatitude", "decimalLongitude", "basisOfRecord", "year", "datasetKey", "issues", "taxonRank", "genus","family","order")
+>>>>>>> personal/main
 
 # Select and rename columns for consistency
 obis_selected <- obis_results %>%
   select(any_of(obis_cols_to_keep)) %>%
+<<<<<<< HEAD
   mutate(year = as.factor(year), source = "obis")
+=======
+  mutate(year = as.factor(year),
+         source = "obis",
+         datasetID = dataset_id) %>% 
+  select(-dataset_id)
+>>>>>>> personal/main
 gbif_selected <- gbif_data %>%
   dplyr::select(any_of(gbif_cols_to_keep)) %>%
   mutate(
@@ -166,12 +256,53 @@ gbif_selected <- gbif_data %>%
     basisOfRecord = as.character(basisOfRecord),
     year = as.factor(year),
     source = "gbif",
+<<<<<<< HEAD
     scientificName = as.character(species)
   ) %>%
   select(-species)
 
 # Merge OBIS and GBIF data
 merged_data <- bind_rows(obis_selected, gbif_selected)
+=======
+    scientificName = case_when(
+      as.character(taxonRank) == "SPECIES"    ~ as.character(species),
+      as.character(taxonRank) == "SUBSPECIES" ~ as.character(species), # We don't wont to go to subspecies level
+      as.character(taxonRank) == "GENUS"      ~ as.character(genus),
+      as.character(taxonRank) == "FAMILY"     ~ as.character(family),
+      as.character(taxonRank) == "ORDER"      ~ as.character(order),
+      as.character(taxonRank) == "UNRANKED"   ~ as.character(species), # keep species, some are NA, but we filter them out afterwards
+      TRUE                                    ~ NA_character_
+    ),
+    datasetID = datasetKey
+  ) %>%
+  select(-species) %>%
+  select(-datasetKey) %>%
+  select(-taxonRank) %>%
+  select(-genus) %>%
+  select(-family) %>%
+  select(-order)
+
+# Merge OBIS and GBIF data
+merged_data <- bind_rows(gbif_selected, obis_selected)
+
+# Fix different writings of basisOfRecord values
+merged_data <- merged_data %>%
+  mutate(basisOfRecord_clean = basisOfRecord %>%
+           str_trim() %>%                 # remove extra spaces
+           str_to_lower())
+merged_data <- merged_data %>%
+  mutate(basisOfRecord_clean = case_when(
+    str_detect(basisOfRecord_clean, "human") ~ "human_observation",
+    str_detect(basisOfRecord_clean, "machine") ~ "machine_observation",
+    str_detect(basisOfRecord_clean, "fossil") ~ "fossil_specimen",
+    str_detect(basisOfRecord_clean, "material_sample|materialsample") ~ "material_sample",
+    str_detect(basisOfRecord_clean, "materialcitation|material_citation") ~ "material_citation",
+    str_detect(basisOfRecord_clean, "preserved") ~ "preserved_specimen",
+    str_detect(basisOfRecord_clean, "occurrence") ~ "occurrence",
+    str_detect(basisOfRecord_clean, "observation") ~ "observation",
+    TRUE ~ basisOfRecord_clean
+  ))
+>>>>>>> personal/main
 
 # ==============================================================================
 # 7. CLEAN DATA WITH COORDINATECLEANER
@@ -237,6 +368,7 @@ final_taxonomy_df <- flattened_taxonomy_df %>%
   select(any_of(desired_taxon_levels))
 
 # Annotate occurrence records with taxonomy
+<<<<<<< HEAD
 Occ_taxonomy <- left_join(cleaned_coords_data, final_taxonomy_df, by = "scientificName")
 
 # ==============================================================================
@@ -327,6 +459,152 @@ for (sci_name in unique_scientific_names) {
 
 # Join IDs to occurrence data
 Occ_taxonomy_with_ids <- left_join(Occ_taxonomy, species_id_lookup, by = "scientificName")
+=======
+Occ_taxonomy <- left_join(final_taxonomy_df, cleaned_coords_data, by = "scientificName")
+
+
+# ==============================================================================
+# 9. GET VALID NAME, IDs and RAMS TAG
+# ==============================================================================
+
+# 1. Clean unique names
+unique_scientific_names <- unique(Occ_taxonomy$scientificName)
+unique_scientific_names <- unique_scientific_names[nzchar(unique_scientific_names) & !is.na(unique_scientific_names)]
+message(paste("\nFound", length(unique_scientific_names), "unique scientific names for trait lookup."))
+
+# 2. WoRMS LOOKUP — preserve alignment between input name and AphiaID
+message("Performing vectorized WoRMS lookup...")
+
+aphia_ids_raw <- worrms::wm_name2id_(unique_scientific_names)
+# wm_name2id_() returns a named list; NULL entries = name not found in WoRMS
+# Build a lookup table BEFORE unlisting so we keep the name↔ID mapping
+aphia_lookup <- data.frame(
+  originalName = names(aphia_ids_raw),                          # input name
+  aphia_id_raw = sapply(aphia_ids_raw, function(x)              # NA if not found
+    if (is.null(x) || length(x) == 0) NA_integer_ else as.integer(x[1]))
+)
+
+message(paste(sum(is.na(aphia_lookup$aphia_id_raw)), "names had no WoRMS match and will be skipped."))
+# Keep only matched names for the bulk record fetch
+aphia_lookup_found <- aphia_lookup[!is.na(aphia_lookup$aphia_id_raw), ]
+
+# 3. Fetch full WoRMS records and extract valid AphiaID + valid name
+aphia_records <- worrms::wm_record_(aphia_lookup_found$aphia_id_raw)
+
+# wm_record_() also drops NULLs — extract with names intact before assigning
+records_df <- data.frame(
+  aphia_id_raw     = as.integer(names(aphia_records)),
+  aphia_id_valid   = sapply(aphia_records, function(df) as.integer(df$valid_AphiaID)),
+  scientificName_valid = sapply(aphia_records, function(df) df$valid_name),
+  row.names = NULL
+)
+
+# Join back onto aphia_lookup_found by the raw ID (preserves all rows, NAs where no record)
+aphia_lookup_found <- left_join(
+  aphia_lookup_found,
+  records_df,
+  by = "aphia_id_raw"
+)
+
+message(paste(sum(is.na(aphia_lookup_found$aphia_id_valid)), "AphiaIDs returned no WoRMS record."))
+
+# 4. Fetch FishBase IDs in batches (use valid AphiaIDs)
+
+# Remove NAs before batching (rejoin later via left_join)
+aphia_valid_for_fb <- aphia_lookup_found[!is.na(aphia_lookup_found$aphia_id_valid), ]
+
+folds <- caret::createFolds(aphia_valid_for_fb$aphia_id_valid, k = 20, list = TRUE)
+
+fb_list <- vector("list", length(folds))
+for (i in seq_along(folds)) {
+  ids <- aphia_valid_for_fb$aphia_id_valid[folds[[i]]]
+  fb_list[[i]] <- tryCatch(
+    worrms::wm_external_(id = ids, type = "fishbase") %>% stack(),
+    error = function(e) { message("Batch ", i, " failed: ", e$message); NULL }
+  )
+  Sys.sleep(10)
+}
+
+fb_df <- do.call(rbind, fb_list[!sapply(fb_list, is.null)])
+colnames(fb_df) <- c("Fishbase", "aphia_id_valid")
+fb_df$aphia_id_valid <- as.integer(as.character(fb_df$aphia_id_valid))
+
+# 5. Assemble final table — start from ALL input names so nothing is lost
+Aphia_data <- aphia_lookup %>%
+  left_join(aphia_lookup_found, by = c("originalName", "aphia_id_raw")) %>%
+  left_join(fb_df, by = "aphia_id_valid")
+
+message(paste(sum(is.na(Aphia_data$aphia_id_valid)), "names unmatched in final table."))
+
+# 6. RAMS CHECK FUNCTION
+check_rams <- function(aphia_id) {
+  if (length(aphia_id) == 0 || is.na(aphia_id)) return(NA_character_)
+  url <- paste0("https://www.marinespecies.org/RAMS/aphia.php?p=taxdetails&id=", aphia_id)
+  res <- tryCatch({
+    resp <- httr::GET(url)
+    cont <- httr::content(resp, as = "text", encoding = "UTF-8")
+    if (grepl("Not found", cont, ignore.case = TRUE)) "no" else "yes"
+  }, error = function(e) "error")
+  return(res)
+}
+
+# 7. LOOP FOR GBIF ID AND POPULATE RAMS TAG
+# Initialize the final lookup table
+species_id_lookup <- tibble()
+
+for (i in 1:nrow(Aphia_data)) {
+  original_name <- Aphia_data$originalName[i]
+  sci_name <- Aphia_data$scientificName_valid[i]
+  aphia_id <- Aphia_data$aphia_id_valid[i]
+  fb_id    <- Aphia_data$Fishbase[i] 
+  
+  message(paste("Processing supplemental IDs for:", sci_name))
+  
+  gbif_id <- NA_integer_
+  
+  # Get GBIF ID with retry logic
+  attempts <- 0
+  max_attempts <- 3
+  while (attempts < max_attempts) {
+    attempts <- attempts + 1
+    gbif_result <- tryCatch({
+      rgbif::name_backbone(name = sci_name)
+    }, error = function(e) NULL)
+    
+    # Check if we got a valid result from GBIF
+    if (!is.null(gbif_result) && !is.null(gbif_result$usageKey)) {
+      gbif_id <- as.integer(gbif_result$usageKey[1])
+      break
+    }
+    Sys.sleep(0.5) 
+  }
+  
+  # Append results to the lookup table
+  # We use the RAMS check function here as it requires a per-ID URL check
+  species_id_lookup <- bind_rows(species_id_lookup, tibble(
+    originalName = original_name,
+    scientificName_valid = sci_name,
+    AphiaID        = aphia_id,
+    FishBaseID     = fb_id,
+    GbifID         = gbif_id,
+    RAMS_species   = check_rams(aphia_id)
+  ))
+  
+  # Polite pause to avoid hitting GBIF/RAMS servers too hard
+  Sys.sleep(0.1)
+}
+
+# Final cleanup: Remove duplicates if any were generated during lookup
+species_id_lookup <- distinct(species_id_lookup)
+
+# ==============================================================================
+# 10. GET TRAIT DATA
+# ==============================================================================
+# 10.1 FISHBASE TRAITS
+
+# Join IDs to occurrence data
+Occ_taxonomy_with_ids <- left_join(Occ_taxonomy, species_id_lookup, by = join_by(scientificName == originalName))
+>>>>>>> personal/main
 
 # Fetch FishBase traits
 message("\nFetching trait data from FishBase...")
@@ -351,8 +629,19 @@ selected_traits <- fishbase_species_traits %>%
 # Join traits to occurrence data
 final_data_with_traits <- left_join(Occ_taxonomy_with_ids, selected_traits, by = "FishBaseID")
 
+<<<<<<< HEAD
 # 9.2 IUCN RED LIST STATUS
 # Function to retrieve IUCN status
+=======
+# Populate the "Species" column with the scientificName_valid of it has genus and species level information. IMPORTANT
+final_data_with_traits <- final_data_with_traits %>%
+  mutate(Species = ifelse(str_count(scientificName_valid, "\\S+") == 2, 
+                          scientificName_valid, 
+                          Species))
+
+# 10.2 IUCN RED LIST STATUS
+# Function to retrieve IUCN status (make sure to put your key in .Renviron as IUCN_REDLIST_KEY)
+>>>>>>> personal/main
 get_iucn_status <- function(genus, species) {
   full_name <- paste(genus, species)
   if (is.na(genus) || is.na(species) || genus == "" || species == "") {
@@ -402,6 +691,7 @@ iucn_lookup_table <- unique_species_to_lookup %>%
   mutate(iucn_status = iucn_statuses, scientificName = paste(Genus, Species))
 
 # Join IUCN status to main dataset
+<<<<<<< HEAD
 final_data_with_traits <- final_data_with_traits %>%
   left_join(iucn_lookup_table %>% select(scientificName, iucn_status), by = "scientificName") %>%
   mutate(
@@ -425,6 +715,41 @@ arrow::write_parquet(final_data_with_traits, parquet_name)
 # ==============================================================================
 write.table(
   x = final_data_with_traits,
+=======
+final_data_with_traits_XXX <- final_data_with_traits %>%
+  left_join(iucn_lookup_table[,3:4], by = join_by(scientificName_valid == scientificName)) %>%
+  mutate(iucn_status = na_if(iucn_status, "NA"),
+         iucn_status = replace_na(iucn_status, "NE"),
+         Fishbase_url = case_when(
+          !is.na(Species) & grepl(" ", Species) ~
+            paste0("https://www.fishbase.se/summary/", gsub(" ", "-", Species, fixed = TRUE)),
+          TRUE ~ NA_character_
+        )
+      )
+
+# ==============================================================================
+# 11. DATA CLEAN UP
+# ============================================================================== 
+# Remove basisOfRecord / scientificName
+final_data_with_traits_XXX <- final_data_with_traits_XXX %>% 
+  select(-c(basisOfRecord, scientificName))
+# Rename BasisOfRecord_clean / scientificName_valid
+final_data_with_traits_XXX <- final_data_with_traits_XXX %>%
+  rename(scientificName = scientificName_valid,
+         basisOfRecord = basisOfRecord_clean)
+
+# ==============================================================================
+# 12. CREATE PARQUET FILE
+# ==============================================================================
+parquet_name <- "Actinopterygii_database.parquet"
+arrow::write_parquet(final_data_with_traits_XXX, parquet_name)
+
+# ==============================================================================
+# 13. WRITE/READ TO .TXT FILE
+# ==============================================================================
+write.table(
+  x = final_data_with_traits_XXX,
+>>>>>>> personal/main
   file = "Actinopterygii_database.txt",
   sep = ",",
   quote = FALSE,
@@ -433,7 +758,16 @@ write.table(
 final_data_with_traits <- read.table(file = "Actinopterygii_database.txt", sep = ",")
 
 # ==============================================================================
+<<<<<<< HEAD
 # 12. LOAD PARQUET DATABASE
 # ==============================================================================
 con <- dbConnect(duckdb::duckdb(), dbdir = "Actinopterygii_database.parquet", read_only = FALSE)
 dbGetQuery(con, "SELECT * FROM 'Actinopterygii_database.parquet' WHERE Vulnerability > 75")
+=======
+# 14. LOAD PARQUET DATABASE
+# ==============================================================================
+con <- dbConnect(duckdb::duckdb(), dbdir = "Actinopterygii_database.parquet", read_only = FALSE)
+dbGetQuery(con, "SELECT * FROM 'Actinopterygii_database.parquet' WHERE Vulnerability > 75")
+# Make data.frame
+df <- dbGetQuery(con, "SELECT * FROM Actinopterygii_database.parquet")
+>>>>>>> personal/main
